@@ -55,81 +55,72 @@ namespace binary_Search_Tree
                 RightNode.Print();
             }
         }
-        public void Locate(T value)
+        public Node<T> Locate(T value)
         {
-            //Delete function
-            if (LeftNode == null && RightNode == null)
+           if(value.CompareTo(Value)==0)
             {
-                throw new Exception("The object doesn't exist in this context");
+                return this;
             }
-            if (LeftNode != null)// checks if the Left Node is there
+            else if(value.CompareTo(Value)<0)
             {
-                if (value.CompareTo(LeftNode.Value) == 0)
+                if(LeftNode!=null)
                 {
-                    if (LeftNode.LeftNode != null || LeftNode.RightNode != null) //checks if there is something to swimp up
-                    {
-                        LeftNode.Delete(); // calls the swimDown method for the node whice needs to be deleted
-                    }
-                    else
-                    {
-                        LeftNode = null;// deletes the node
-                    }
-                }
-                else if (value.CompareTo(Value) < 0)
-                {
-                    LeftNode.Locate(value);// Calls the delete Method to continue recursively threw the Left Node
-                }
-            }
-            if (RightNode != null)// checks if the Right Node is there
-            {
-                if (value.CompareTo(RightNode.Value) == 0)
-                {
-                    if (RightNode.LeftNode != null || RightNode.RightNode != null) //checks if there is a node to swim up
-                    {
-                        RightNode.Delete(); // calls the swimDown method for the node whice needs to be deleted
-                    }
-                    else
-                    {
-                        RightNode = null; // deletes the node
-                    }
-                }
-                else if (value.CompareTo(Value) > 0) // climbs up the tree to the write
-                {
-                    RightNode.Locate(value); //Calls the Delete Method to continue recursively threw the Right Node
-                }
-            }
-           
-        }
-        private void Delete()
-        {
-            /* SwimDown Method works recursively and is declared when found the node which needs to be delete
-             * but the node is a parent to one or two other nodes
-             */
-            if(RightNode != null)
-            {
-                Value = RightNode.Value;
-                if (RightNode.LeftNode != null || RightNode.RightNode != null)
-                {
-                    RightNode.Delete();
+                    return LeftNode.Locate(value);
                 }
                 else
                 {
-                    RightNode = null;
+                   throw new Exception("The value is not exsisting in the currrent context");
                 }
+            }
+           else
+            {
+                if(RightNode!=null)
+                {
+                    return RightNode.Locate(value);
+                }
+                else
+                {
+                   throw new Exception("The value is not exsisting in the currrent context");
+                }
+            }
+       
+        }
+     
+        public void Delete(T value)
+        {
+          Locate(value).SwimUp();
+        }
+        private void SwimUp()
+        {
+            if(LeftNode != null)
+            {
+                Value = LeftNode.Value;
+                LeftNode.SwimUp();
+            }
+            else if(RightNode != null)
+            {
+                Value = RightNode.Value;
+                RightNode.SwimUp();
             }
             else
             {
-                Value = LeftNode.Value;
-                if (LeftNode.LeftNode != null || LeftNode.RightNode != null)
+               if(Parent.LeftNode!=null)
                 {
-                    LeftNode.Delete();
+                    if(this.Equals(Parent.LeftNode))
+                    {
+                        Parent.LeftNode = null;
+                    }
                 }
-                else
+               else
                 {
-                    LeftNode = null;
+                    if(this.Equals(Parent.RightNode))
+                    {
+                        Parent.RightNode = null;
+                    }
                 }
             }
         }
+    
         
     }
 }
