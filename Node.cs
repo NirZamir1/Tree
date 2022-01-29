@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace binary_Search_Tree
 {
-    public class Node <T> where T:IComparable
+    public class Node<T> :IEnumerable<T>  where T : IComparable 
     {
         Node<T> RightNode;
         Node<T> LeftNode;
         public T Value;
         public Node<T>? Parent { get;}
-        public Node(T value,Node<T>? parent = null)
+        public Node(T value, Node<T>? parent = null)
         {
             Value = value;
             Parent = parent;
@@ -120,7 +121,95 @@ namespace binary_Search_Tree
                 }
             }
         }
-    
-        
+        public Node<T> toBottom()
+        {
+            if(LeftNode != null)
+            {
+               return LeftNode.toBottom();
+            }
+            else
+            {
+                return this;
+            }
+        }
+        public Node<T> NextInOrder()
+        {
+            if(RightNode != null)
+            {
+                return RightNode;
+            }
+            else if (Parent != null)
+            {
+                if(Value.CompareTo(Parent.Value)>0)
+                {
+                    if(Parent.Parent != null)
+                    {
+                        return Parent.Parent;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    return Parent;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public IEnumerator<T> GetEnumerator()
+        {
+            Enumartor<T> enumartor = new Enumartor<T>(this);
+            return enumartor;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
+    public class Enumartor<T> : IEnumerator<T> where T  : IComparable
+    {
+        public object Current => tree;
+        Node<T> nextTree;
+        T IEnumerator<T>.Current => tree.Value;
+
+        private Node<T> tree;
+        public Enumartor(Node<T> tree_)
+        {
+            tree = tree_.toBottom();
+            nextTree = tree;
+        }
+
+        public bool MoveNext()
+        {
+            tree = nextTree;
+            if (nextTree != null)
+            {
+                nextTree = nextTree.NextInOrder();
+            }
+            if (tree != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
 }
