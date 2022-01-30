@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace binary_Search_Tree
 {
-    public class Node <T> where T:IComparable
+    public class Node<T> :IEnumerable<T>  where T : IComparable 
     {
         Node<T> RightNode;
         Node<T> LeftNode;
         public T Value;
         public Node<T>? Parent { get;}
-        public Node(T value,Node<T>? parent = null)
+        public Node(T value, Node<T>? parent = null)
         {
             Value = value;
             Parent = parent;
@@ -55,81 +56,160 @@ namespace binary_Search_Tree
                 RightNode.Print();
             }
         }
-        public void Locate(T value)
+        public Node<T> Locate(T value)
         {
-            //Delete function
-            if (LeftNode == null && RightNode == null)
+           if(value.CompareTo(Value)==0)
             {
-                throw new Exception("The object doesn't exist in this context");
+                return this;
             }
-            if (LeftNode != null)// checks if the Left Node is there
+            else if(value.CompareTo(Value)<0)
             {
-                if (value.CompareTo(LeftNode.Value) == 0)
+                if(LeftNode!=null)
                 {
-                    if (LeftNode.LeftNode != null || LeftNode.RightNode != null) //checks if there is something to swimp up
-                    {
-                        LeftNode.Delete(); // calls the swimDown method for the node whice needs to be deleted
-                    }
-                    else
-                    {
-                        LeftNode = null;// deletes the node
-                    }
-                }
-                else if (value.CompareTo(Value) < 0)
-                {
-                    LeftNode.Locate(value);// Calls the delete Method to continue recursively threw the Left Node
-                }
-            }
-            if (RightNode != null)// checks if the Right Node is there
-            {
-                if (value.CompareTo(RightNode.Value) == 0)
-                {
-                    if (RightNode.LeftNode != null || RightNode.RightNode != null) //checks if there is a node to swim up
-                    {
-                        RightNode.Delete(); // calls the swimDown method for the node whice needs to be deleted
-                    }
-                    else
-                    {
-                        RightNode = null; // deletes the node
-                    }
-                }
-                else if (value.CompareTo(Value) > 0) // climbs up the tree to the write
-                {
-                    RightNode.Locate(value); //Calls the Delete Method to continue recursively threw the Right Node
-                }
-            }
-           
-        }
-        private void Delete()
-        {
-            /* SwimDown Method works recursively and is declared when found the node which needs to be delete
-             * but the node is a parent to one or two other nodes
-             */
-            if(RightNode != null)
-            {
-                Value = RightNode.Value;
-                if (RightNode.LeftNode != null || RightNode.RightNode != null)
-                {
-                    RightNode.Delete();
+                    return LeftNode.Locate(value);
                 }
                 else
                 {
-                    RightNode = null;
+                   throw new Exception("The value is not exsisting in the currrent context");
+                }
+            }
+           else
+            {
+                if(RightNode!=null)
+                {
+                    return RightNode.Locate(value);
+                }
+                else
+                {
+                   throw new Exception("The value is not exsisting in the currrent context");
+                }
+            }
+       
+        }
+     
+        public void Delete(T value)
+        {
+          Locate(value).SwimUp();
+        }
+        private void SwimUp()
+        {
+            if(LeftNode != null)
+            {
+                Value = LeftNode.Value;
+                LeftNode.SwimUp();
+            }
+            else if(RightNode != null)
+            {
+                Value = RightNode.Value;
+                RightNode.SwimUp();
+            }
+            else
+            {
+               if(Parent.LeftNode!=null)
+                {
+                    if(this.Equals(Parent.LeftNode))
+                    {
+                        Parent.LeftNode = null;
+                    }
+                }
+               else
+                {
+                    if(this.Equals(Parent.RightNode))
+                    {
+                        Parent.RightNode = null;
+                    }
+                }
+            }
+        }
+        public Node<T> toBottom()
+        {
+            if(LeftNode != null)
+            {
+               return LeftNode.toBottom();
+            }
+            else
+            {
+                return this;
+            }
+        }
+        public Node<T> NextInOrder()
+        {
+            if(RightNode != null)
+            {
+                return RightNode;
+            }
+            else if (Parent != null)
+            {
+                if(Value.CompareTo(Parent.Value)>0)
+                {
+                    if(Parent.Parent != null)
+                    {
+                        return Parent.Parent;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    return Parent;
                 }
             }
             else
             {
-                Value = LeftNode.Value;
-                if (LeftNode.LeftNode != null || LeftNode.RightNode != null)
-                {
-                    LeftNode.Delete();
-                }
-                else
-                {
-                    LeftNode = null;
-                }
+                return null;
             }
         }
-        
+        public IEnumerator<T> GetEnumerator()
+        {
+            Enumartor<T> enumartor = new Enumartor<T>(this);
+            return enumartor;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
+    public class Enumartor<T> : IEnumerator<T> where T  : IComparable
+    {
+        public object Current => tree;
+        Node<T> nextTree;
+        T IEnumerator<T>.Current => tree.Value;
+
+        private Node<T> tree;
+        public Enumartor(Node<T> tree_)
+        {
+            tree = tree_.toBottom();
+            nextTree = tree;
+        }
+
+        public bool MoveNext()
+        {
+            tree = nextTree;
+            if (nextTree != null)
+            {
+                nextTree = nextTree.NextInOrder();
+            }
+            if (tree != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
 }
